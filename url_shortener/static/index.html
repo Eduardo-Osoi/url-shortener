@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>url.py — Acortador de URLs</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --py: #3572A5; --py-light: #e8f2fb; --py-mid: #85B7EB;
+  --accent: #f7c948; --acc-dark: #c49a0a;
+  --bg: #ffffff; --bg2: #f6f8fa; --bg3: #eef1f5;
+  --text: #1a1a2e; --text2: #57606a; --text3: #8c959f;
+  --border: #d0d7de; --border2: #b1bac4;
+  --success: #1a7f37; --successbg: #dafbe1; --successborder: #82e4a3;
+  --danger: #cf222e; --dangerbg: #ffebe9; --dangerborder: #ff8182;
+  --warning: #9a6700; --warningbg: #fff8c5; --warningborder: #e3b341;
+  --radius: 10px; --radius-lg: 14px;
+}
+body { font-family: 'Sora', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; }
+.app { max-width: 820px; margin: 0 auto; padding: 28px 20px 60px; }
+
+/* HEADER */
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-mark { width: 42px; height: 42px; border-radius: 12px; background: var(--py); display: flex; align-items: center; justify-content: center; }
+.logo-mark svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.logo-text { font-size: 20px; font-weight: 600; letter-spacing: -0.03em; color: var(--text); }
+.logo-text span { color: var(--py); }
+.header-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.hchip { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; padding: 3px 10px; border-radius: 20px; border: 1px solid; }
+.hc-py  { background: var(--py-light); color: var(--py); border-color: var(--py-mid); }
+.hc-fast { background: var(--dangerbg); color: var(--danger); border-color: var(--dangerborder); }
+.hc-db  { background: var(--successbg); color: var(--success); border-color: var(--successborder); }
+
+/* CARD */
+.card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 18px; }
+
+/* FORM */
+.form-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 0.08em; margin-bottom: 14px; }
+.url-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.url-input { flex: 1; min-width: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text); outline: none; transition: border-color 0.2s; }
+.url-input:focus { border-color: var(--py); }
+.url-input::placeholder { color: var(--text3); }
+.opts-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.slug-wrap { display: flex; align-items: center; flex: 1; min-width: 200px; }
+.slug-prefix { background: var(--bg3); border: 1px solid var(--border); border-right: none; border-radius: var(--radius) 0 0 var(--radius); padding: 9px 12px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); white-space: nowrap; }
+.slug-input { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-left: none; border-radius: 0 var(--radius) var(--radius) 0; padding: 9px 12px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); outline: none; }
+.slug-input:focus { border-color: var(--py); }
+.slug-input::placeholder { color: var(--text3); }
+.expires-select { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 9px 12px; font-family: 'Sora', sans-serif; font-size: 12px; color: var(--text2); outline: none; cursor: pointer; }
+.btn-shorten { background: var(--py); color: #fff; border: none; border-radius: var(--radius); padding: 12px 24px; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.btn-shorten:hover { background: #2b5f91; }
+.btn-shorten:disabled { background: var(--border2); cursor: not-allowed; }
+.btn-shorten svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ALERTS */
+.alert { border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px; font-size: 13px; display: none; }
+.alert.show { display: flex; align-items: center; gap: 10px; }
+.alert-success { background: var(--successbg); border: 1px solid var(--successborder); color: var(--success); }
+.alert-error   { background: var(--dangerbg);  border: 1px solid var(--dangerborder);  color: var(--danger); }
+.alert svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; flex-shrink: 0; }
+.alert-body { flex: 1; }
+.alert-url { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; word-break: break-all; }
+.btn-copy { background: var(--bg); border: 1px solid var(--border2); border-radius: 7px; padding: 5px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; white-space: nowrap; color: var(--text2); }
+.btn-copy:hover { background: var(--bg2); }
+.btn-copy.copied { background: var(--py); color: #fff; border-color: var(--py); }
+.btn-copy svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 20px; }
+.stat { background: var(--bg2); border-radius: var(--radius); padding: 14px 16px; border: 1px solid var(--border); }
+.stat-val { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 3px; }
+.stat-lbl { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); }
+.sv-blue { color: var(--py); }
+.sv-acc  { color: var(--acc-dark); }
+.sv-green { color: var(--success); }
+.sv-gray  { color: var(--text2); }
+
+/* TABLE */
+.table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+.table-title { font-size: 14px; font-weight: 500; }
+.search-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); outline: none; width: 180px; }
+.search-box:focus { border-color: var(--py); }
+.search-box::placeholder { color: var(--text3); }
+.table-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { border-bottom: 1px solid var(--border); background: var(--bg2); }
+th { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; padding: 10px 14px; text-align: left; }
+td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--bg2); }
+.short-link { font-family: 'DM Mono', monospace; color: var(--py); font-size: 12px; font-weight: 500; text-decoration: none; }
+.short-link:hover { text-decoration: underline; }
+.orig-url { color: var(--text2); font-size: 12px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+.clicks-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--py-light); color: var(--py); border-radius: 6px; padding: 3px 8px; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; }
+.clicks-badge svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; }
+.bar-mini { width: 60px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 5px; }
+.bar-fill { height: 100%; background: var(--py); border-radius: 2px; }
+.exp-badge { font-family: 'DM Mono', monospace; font-size: 10px; padding: 3px 8px; border-radius: 5px; border: 1px solid; }
+.exp-never  { background: var(--successbg); color: var(--success); border-color: var(--successborder); }
+.exp-soon   { background: var(--dangerbg); color: var(--danger); border-color: var(--dangerborder); }
+.exp-future { background: var(--bg2); color: var(--text3); border-color: var(--border); }
+.row-actions { display: flex; gap: 4px; }
+.tbl-btn { width: 28px; height: 28px; background: transparent; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text3); transition: all 0.15s; }
+.tbl-btn svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tbl-btn.copy:hover { background: var(--py-light); color: var(--py); }
+.tbl-btn.del:hover  { background: var(--dangerbg); color: var(--danger); }
+
+/* EMPTY */
+.empty { text-align: center; padding: 40px 20px; color: var(--text3); }
+.empty svg { width: 36px; height: 36px; fill: none; stroke: var(--text3); stroke-width: 1.5; margin-bottom: 12px; }
+.empty p { font-size: 13px; }
+
+/* FOOTER */
+.footer-note { margin-top: 24px; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--py); border-radius: 0 var(--radius) var(--radius) 0; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); line-height: 1.7; }
+.footer-note a { color: var(--py); text-decoration: none; }
+.footer-note a:hover { text-decoration: underline; }
+
+@media (max-width: 560px) {
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  th:nth-child(4), td:nth-child(4) { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+      </div>
+      <span class="logo-text">url<span>.</span>py</span>
+    </div>
+    <div class="header-chips">
+      <span class="hchip hc-py">Python 3.12</span>
+      <span class="hchip hc-fast">FastAPI</span>
+      <span class="hchip hc-db">SQLite</span>
+    </div>
+  </div>
+
+  <!-- SHORTEN FORM -->
+  <div class="card">
+    <div class="form-label">// acortar_url · POST /api/v1/urls</div>
+    <div class="url-row">
+      <input class="url-input" id="long-url" type="url" placeholder="https://tu-url-larga.com/con/muchos/parametros?query=ejemplo">
+      <button class="btn-shorten" id="shorten-btn" onclick="shortenUrl()">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        Acortar
+      </button>
+    </div>
+    <div class="opts-row">
+      <div class="slug-wrap">
+        <span class="slug-prefix">localhost:8000/r/</span>
+        <input class="slug-input" id="custom-slug" type="text" placeholder="mi-slug (opcional)">
+      </div>
+      <select class="expires-select" id="expires">
+        <option value="">Sin vencimiento</option>
+        <option value="1d">Expira en 1 día</option>
+        <option value="7d">Expira en 7 días</option>
+        <option value="30d">Expira en 30 días</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ALERTS -->
+  <div class="alert alert-success" id="alert-ok">
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    <div class="alert-body">
+      <div style="font-size:11px;font-family:'DM Mono',monospace;margin-bottom:4px;opacity:0.7">// 201 CREATED</div>
+      <div class="alert-url" id="result-url"></div>
+    </div>
+    <button class="btn-copy" id="copy-btn" onclick="copyResult()">
+      <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Copiar
+    </button>
+  </div>
+  <div class="alert alert-error" id="alert-err">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="err-msg">Error</span>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat"><div class="stat-val sv-blue" id="s-total">—</div><div class="stat-lbl">total_urls</div></div>
+    <div class="stat"><div class="stat-val sv-acc" id="s-clicks">—</div><div class="stat-lbl">total_clicks</div></div>
+    <div class="stat"><div class="stat-val sv-green" id="s-top">—</div><div class="stat-lbl">top_url_clicks</div></div>
+    <div class="stat"><div class="stat-val sv-gray" id="s-perm">—</div><div class="stat-lbl">sin_vencimiento</div></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-header">
+    <span class="table-title">URLs registradas</span>
+    <input class="search-box" type="text" placeholder="buscar..." oninput="filterTable(this.value)">
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>URL CORTA</th>
+          <th>DESTINO</th>
+          <th>CLICS</th>
+          <th>VENCIMIENTO</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="url-tbody">
+        <tr><td colspan="5"><div class="empty"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg><p>Cargando URLs...</p></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer-note">
+    // API docs: <a href="/docs" target="_blank">localhost:8000/docs</a> &nbsp;·&nbsp;
+    Redirección: <a href="/r/{slug}" target="_blank">localhost:8000/r/{slug}</a> &nbsp;·&nbsp;
+    Stats: <a href="/api/v1/urls/stats" target="_blank">GET /api/v1/urls/stats</a>
+  </div>
+
+</div>
+
+<script>
+const API = '/api/v1';
+let allUrls = [];
+let currentResultUrl = '';
+
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Error desconocido' }));
+    throw new Error(err.detail || 'Error en el servidor');
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+async function shortenUrl() {
+  const longUrl = document.getElementById('long-url').value.trim();
+  const customSlug = document.getElementById('custom-slug').value.trim();
+  const expiresIn = document.getElementById('expires').value;
+
+  if (!longUrl) { document.getElementById('long-url').focus(); return; }
+
+  hideAlerts();
+  const btn = document.getElementById('shorten-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Acortando...';
+
+  try {
+    const body = { original_url: longUrl };
+    if (customSlug) body.custom_slug = customSlug;
+    if (expiresIn) body.expires_in = expiresIn;
+
+    const data = await api('/urls', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+
+    currentResultUrl = data.short_url;
+    document.getElementById('result-url').textContent = data.short_url;
+    document.getElementById('alert-ok').classList.add('show');
+    document.getElementById('long-url').value = '';
+    document.getElementById('custom-slug').value = '';
+    document.getElementById('expires').value = '';
+
+    await loadUrls();
+    await loadStats();
+  } catch (e) {
+    document.getElementById('err-msg').textContent = e.message;
+    document.getElementById('alert-err').classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg> Acortar';
+  }
+}
+
+function hideAlerts() {
+  document.getElementById('alert-ok').classList.remove('show');
+  document.getElementById('alert-err').classList.remove('show');
+}
+
+function copyResult() {
+  navigator.clipboard?.writeText(currentResultUrl).catch(() => {});
+  const btn = document.getElementById('copy-btn');
+  btn.classList.add('copied');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Copiado';
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copiar';
+  }, 2000);
+}
+
+async function loadUrls() {
+  try {
+    allUrls = await api('/urls');
+    renderTable(allUrls);
+  } catch (e) {
+    console.error('Error cargando URLs:', e);
+  }
+}
+
+async function loadStats() {
+  try {
+    const s = await api('/urls/stats');
+    document.getElementById('s-total').textContent  = s.total_urls;
+    document.getElementById('s-clicks').textContent = s.total_clicks.toLocaleString();
+    document.getElementById('s-top').textContent    = s.top_clicks;
+    document.getElementById('s-perm').textContent   = s.permanent_urls;
+  } catch (e) {
+    console.error('Error cargando stats:', e);
+  }
+}
+
+async function deleteUrl(slug) {
+  if (!confirm(`¿Eliminar la URL con slug "${slug}"?`)) return;
+  try {
+    await api(`/urls/${slug}`, { method: 'DELETE' });
+    await loadUrls();
+    await loadStats();
+  } catch (e) {
+    alert('Error al eliminar: ' + e.message);
+  }
+}
+
+function copySlug(shortUrl) {
+  navigator.clipboard?.writeText(shortUrl).catch(() => {});
+}
+
+function expClass(expires_at) {
+  if (!expires_at) return 'exp-never';
+  const d = new Date(expires_at);
+  const now = new Date();
+  const diff = (d - now) / 1000 / 60 / 60; // hours
+  return diff < 24 ? 'exp-soon' : 'exp-future';
+}
+
+function expLabel(expires_at) {
+  if (!expires_at) return 'Permanente';
+  const d = new Date(expires_at);
+  return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: '2-digit' });
+}
+
+function filterTable(q) {
+  const filtered = allUrls.filter(u =>
+    u.slug.toLowerCase().includes(q.toLowerCase()) ||
+    u.original_url.toLowerCase().includes(q.toLowerCase())
+  );
+  renderTable(filtered);
+}
+
+function renderTable(urls) {
+  const maxClicks = Math.max(...urls.map(u => u.clicks), 1);
+  const tbody = document.getElementById('url-tbody');
+  if (!urls.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg><p>No hay URLs. ¡Acorta la primera!</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = urls.map(u => `
+    <tr>
+      <td><a class="short-link" href="${u.short_url}" target="_blank">${u.short_url.replace('http://','').replace('https://','')}</a></td>
+      <td><span class="orig-url" title="${u.original_url}">${u.original_url}</span></td>
+      <td>
+        <span class="clicks-badge">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          ${u.clicks}
+        </span>
+        <div class="bar-mini"><div class="bar-fill" style="width:${Math.round(u.clicks/maxClicks*100)}%"></div></div>
+      </td>
+      <td><span class="exp-badge ${expClass(u.expires_at)}">${expLabel(u.expires_at)}</span></td>
+      <td>
+        <div class="row-actions">
+          <button class="tbl-btn copy" onclick="copySlug('${u.short_url}')" title="Copiar URL corta">
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+          <button class="tbl-btn del" onclick="deleteUrl('${u.slug}')" title="Eliminar">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// Init
+document.getElementById('long-url').addEventListener('keydown', e => { if (e.key === 'Enter') shortenUrl(); });
+loadUrls();
+loadStats();
+</script>
+</body>
+</html>
