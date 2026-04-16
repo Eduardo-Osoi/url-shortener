@@ -26,7 +26,7 @@ async def create_short_url(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    # Check slug conflict
+    
     if body.custom_slug:
         existing = crud.get_by_slug(db, body.custom_slug)
         if existing:
