@@ -1,6 +1,3 @@
-/* -*- indent-tabs-mode: nil; tab-width: 4; -*- */
-
-/* Greenlet object interface */
 
 #ifndef Py_GREENLETOBJECT_H
 #define Py_GREENLETOBJECT_H
@@ -12,7 +9,7 @@
 extern "C" {
 #endif
 
-/* This is deprecated and undocumented. It does not change. */
+
 #define GREENLET_VERSION "1.0.0"
 
 #ifndef GREENLET_MODULE
@@ -29,9 +26,9 @@ typedef struct _greenlet {
 #define PyGreenlet_Check(op) (op && PyObject_TypeCheck(op, &PyGreenlet_Type))
 
 
-/* C API functions */
 
-/* Total number of symbols that are exported */
+
+
 #define PyGreenlet_API_pointers 12
 
 #define PyGreenlet_Type_NUM 0
@@ -50,7 +47,7 @@ typedef struct _greenlet {
 #define PyGreenlet_GET_PARENT_NUM 11
 
 #ifndef GREENLET_MODULE
-/* This section is used by modules that uses the greenlet C API */
+
 static void** _PyGreenlet_API = NULL;
 
 #    define PyGreenlet_Type \
