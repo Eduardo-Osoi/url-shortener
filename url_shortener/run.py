@@ -1,6 +1,4 @@
-"""
-Punto de entrada — ejecuta esto para levantar el servidor.
-"""
+
 import uvicorn
 
 if __name__ == "__main__":
