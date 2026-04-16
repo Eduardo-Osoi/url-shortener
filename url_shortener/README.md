@@ -1,11 +1,11 @@
 # url.py — Acortador de URLs
 
-Proyecto training con **Python 3.12 + FastAPI + SQLite**.  
-Sin configuración extra — funciona con solo instalar las dependencias.
+Proyecto training con Python 3.12 + FastAPI + SQLite.  
+
 
 ---
 
-## Stack
+
 
 | Capa       | Tecnología              |
 |------------|-------------------------|
@@ -33,10 +33,6 @@ Abre la terminal integrada (`Ctrl + `` ` ``) y ejecuta:
 python -m venv .venv
 .venv\Scripts\activate
 
-# macOS / Linux
-python3 -m venv .venv
-source .venv/bin/activate
-```
 
 ### 3. Instalar dependencias
 ```bash
@@ -48,7 +44,7 @@ pip install -r requirements.txt
 python run.py
 ```
 
-Abre el navegador en: **http://localhost:8000**
+Abre el navegador en: http://localhost:8000
 
 ---
 
@@ -103,24 +99,8 @@ url_shortener/
 └── .env.example
 ```
 
----
 
-## Variables de entorno (opcionales)
 
-Copia `.env.example` como `.env`:
 
-```bash
-cp .env.example .env
-```
 
-Por defecto usa SQLite — no necesitas cambiar nada para comenzar.
 
----
-
-## Próximos pasos (retos)
-
-- [ ] Conectar a PostgreSQL (cambiar `DATABASE_URL` en `.env`)
-- [ ] Agregar Redis para cache de redirecciones
-- [ ] Implementar autenticación JWT
-- [ ] Integrar con Jenkins para CI/CD
-- [ ] Agregar métricas con Prometheus + Grafana
