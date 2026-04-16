@@ -1,7 +1,4 @@
-"""
-Tests para el Acortador de URLs.
-Ejecutar con: pytest tests/ -v
-"""
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -10,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from app.main import app
 from app.database import Base, get_db
 
-# Use in-memory SQLite for tests
+
 TEST_DB = "sqlite:///:memory:"
 engine_test = create_engine(TEST_DB, connect_args={"check_same_thread": False})
 TestingSession = sessionmaker(autocommit=False, autoflush=False, bind=engine_test)
@@ -30,7 +27,7 @@ Base.metadata.create_all(bind=engine_test)
 client = TestClient(app)
 
 
-# ── CREATE ─────────────────────────────────────────────────────────────
+
 
 def test_create_url_auto_slug():
     res = client.post("/api/v1/urls", json={"original_url": "https://example.com"})
@@ -71,7 +68,7 @@ def test_create_url_with_expiry():
     assert res.json()["expires_at"] is not None
 
 
-# ── LIST & STATS ────────────────────────────────────────────────────────
+
 
 def test_list_urls():
     res = client.get("/api/v1/urls")
@@ -87,7 +84,6 @@ def test_get_stats():
     assert "total_clicks" in data
 
 
-# ── REDIRECT ────────────────────────────────────────────────────────────
 
 def test_redirect():
     create = client.post("/api/v1/urls", json={
@@ -116,7 +112,7 @@ def test_redirect_not_found():
     assert res.status_code == 404
 
 
-# ── DELETE ──────────────────────────────────────────────────────────────
+
 
 def test_delete_url():
     client.post("/api/v1/urls", json={
@@ -134,7 +130,7 @@ def test_delete_not_found():
     assert res.status_code == 404
 
 
-# ── HEALTH ──────────────────────────────────────────────────────────────
+
 
 def test_health():
     res = client.get("/health")
