@@ -71,7 +71,7 @@ async def delete_url(slug: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="URL no encontrada")
 
 
-# Redirect route — outside /api/v1 prefix
+
 @router.get("/redirect/{slug}")
 async def redirect_to_original(slug: str, db: Session = Depends(get_db)):
     url = crud.get_by_slug(db, slug)
