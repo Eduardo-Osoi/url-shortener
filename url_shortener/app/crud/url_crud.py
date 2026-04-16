@@ -39,17 +39,17 @@ def get_all(db: Session, skip: int = 0, limit: int = 100) -> List[ShortURL]:
 
 
 def create_url(db: Session, data: URLCreate) -> ShortURL:
-    # Resolve slug
+    
     if data.custom_slug:
         slug = data.custom_slug
     else:
-        # Generate unique slug (retry up to 5 times)
+        
         for _ in range(5):
             slug = _generate_slug()
             if not get_by_slug(db, slug):
                 break
 
-    # Resolve expiry
+    
     expires_at = None
     if data.expires_in and data.expires_in in EXPIRY_MAP:
         expires_at = datetime.utcnow() + EXPIRY_MAP[data.expires_in]
