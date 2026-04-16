@@ -3,14 +3,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# SQLite by default — zero config, works out of the box
-# To use PostgreSQL: set DATABASE_URL=postgresql://user:pass@localhost/urldb
+
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "sqlite:///./url_shortener.db"
 )
 
-# SQLite needs check_same_thread=False
+ check_same_thread=False
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
